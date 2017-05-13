@@ -1,6 +1,6 @@
 <?php 
 //namespace lib;
-require 'ErrorCode.php';
+require_once __DIR__. '/ErrorCode.php';
 class User
 {	
 	private $_db;
@@ -12,6 +12,14 @@ class User
 	{
 		$this->_db=$_db;
 	}
+
+    /**
+     * 用户登录
+     * @param $username
+     * @param $password
+     * @return mixed
+     * @throws Exception
+     */
 	public function login($username,$password)
 	{
 		if (empty($username)) {
@@ -35,8 +43,18 @@ class User
 		unset($res['password']);
 		return $res;
 	}
+
+    /**
+     * 用户注册
+     * @param $username
+     * @param $password
+     * @return array
+     * @throws Exception
+     */
 	public function register($username,$password)
 	{
+	    //return $this->CheckUser($username);
+
 		if (empty($username)) {
 			throw new Exception("用户名不能为空", ErrorCode::USERNAME_CANNOT_EMPTY);
 			
@@ -65,15 +83,26 @@ class User
 			'username'=>$username,
 			'createAt'=>$createAt
 		];
+
+
 	}
+
+    /**
+     * 增强md5加密
+     * @param $string
+     * @param string $key
+     * @return string
+     */
 	private function CheckMd5($string,$key='apitest')
 	{
 		return md5($string.$key);
 	}
-	/**
-	 * 判断用户是否存在
-	 * @param [type] $username [description]
-	 */
+
+    /**
+     * 检测用户名是否存在
+     * @param $username
+     * @return bool
+     */
 	private function CheckUser($username)
 	{
 		$sql ='SELECT * FROM `user`WHERE `username`=:username';
