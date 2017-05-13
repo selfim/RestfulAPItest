@@ -29,7 +29,7 @@ class Article
 			
 		}
 		//写入数据库
-		$sql='INSERT INTO `artitle`(`title`,`content`,`user_id`,`createAt`) VALUES(:title,:content,:user_id,:createAt)';
+		$sql='INSERT INTO `article`(`title`,`content`,`user_id`,`createAt`) VALUES(:title,:content,:user_id,:createAt)';
 		$createAt = time();
 		$stmt=$this->_db->prepare($sql);
 		$stmt->bindParam(':title',$title);
@@ -38,7 +38,7 @@ class Article
 		$stmt->bindParam(':createAt',$createAt);
 		
 		if (!$stmt->execute()) {
-			throw new Exception("Error Processing Request", ErrorCode::ARTICLE_CREATE_FAIL);
+			throw new Exception("文章发布失败", ErrorCode::ARTICLE_CREATE_FAIL);
 			
 		}
 		return [
