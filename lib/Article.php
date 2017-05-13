@@ -8,6 +8,15 @@ class Article
 	{
 		$this->_db=$_db;
 	}
+
+    /**
+     * 创建文章
+     * @param $title
+     * @param $content
+     * @param $userID
+     * @return array
+     * @throws Exception
+     */
 	public function create($title,$content,$userID)
 	{
 		//数据检测
@@ -42,17 +51,34 @@ class Article
 
 	}
 
+    /**
+     * 编辑文章
+     * @param $articleId
+     * @param $title
+     * @param $content
+     * @param $userID
+     */
 	public function edit($articleId,$title,$content,$userID)
 	{
 
 	}
 
+    /**删除文章
+     * @param $articleId
+     * @param $userID
+     */
 	public function del($articleId,$userID)
 	{
 
 	}
 
-	public function getList()
+    /**
+     * 读取文章列表
+     * @param $userId
+     * @param int $page
+     * @param int $size
+     */
+	public function getList($userId,$page =1,$size =10)
 	{
 
 	}
