@@ -20,5 +20,5 @@ class ErrorCode
     const ARTICLE_EDIT_FAIL=12;//文章编辑失败
     const ARTICLE_DELETE_FAIL=13;//文章删除失败
     const PAGE_MAX_SIZEIS_100=14;//分页最大为100
-    const ARTICLE_NOT_FOUND=15;//文章未找到
+    const SERVER_INTERNAL_ERROR = 15;//服务器内部错误
 }
