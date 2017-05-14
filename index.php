@@ -12,5 +12,5 @@ $artitle = new Article($pdo);
 //print_r($artitle->view(1));
 //print_r($artitle->edit(1,'hello','restful api',2));
 //var_dump($artitle->del(8,2));
-
+print_r($artitle->getList(2));
 

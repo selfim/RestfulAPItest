@@ -132,13 +132,27 @@ class Article
 	}
 
     /**
-     * 读取文章列表
+     * 获取文章列表
      * @param $userId
      * @param int $page
      * @param int $size
+     * @return mixed
+     * @throws Exception
      */
 	public function getList($userId,$page =1,$size =10)
 	{
+        if ($size>100){
+            throw new Exception('分页大小最大为100',ErrorCode::PAGE_MAX_SIZEIS_100);
+        }
+        $sql ='SELECT * FROM `article` WHERE `user_id`=:userId LIMIT :limit,:offset';
+        $stmt=$this->_db->prepare($sql);
+        $limit = ($page-1)*$size;
+        $limit =$limit<0?0:$limit;
+        $stmt->bindParam(':userId',$userId);
+        $stmt->bindParam(':limit',$limit);
+        $stmt->bindParam(':offset',$size);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 	}
 }
