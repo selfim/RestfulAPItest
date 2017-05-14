@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/**
+ * 错误码
+ * Class ErrorCode
+ */
 class ErrorCode
 {
 	const USERNAME_EXISTS=1;//用户名已存在
@@ -9,4 +14,9 @@ class ErrorCode
 	const ARTICLE_TITLE_CANNOT_EMPTY=6;//文章标题不能为空
 	const ARTICLE_CONTENT_CANNOT_EMPTY=7;//文章内容不能为空
 	const ARTICLE_CREATE_FAIL=8;//文章创建失败
+    const ARTICLEID_CANNOT_EMPTY=9;//文章ID不能为空
+    const ARTICLE_NOT_FOUND=10;//文章不存在
+    const PERMISSION_DENIED=11;//无权操作
+    const ARTICLE_EDIT_FAIL=12;//文章编辑失败
+    const ARTICLE_DELETE_FAIL=13;//文章删除失败
 }
