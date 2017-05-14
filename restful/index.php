@@ -84,7 +84,7 @@ class Restful{
             if ($this->_resourceName=='users'){
                 return $this->_json($this->_handleUser());
             }else{
-                return $this->_handleArticle();
+                return $this->_json($this->_handleArticle());
             }
         }catch (Exception $e){
            $this->_json(['error'=>$e->getMessage()],$e->getCode());
@@ -126,10 +126,10 @@ class Restful{
     /**
      * 初始化资源标识符
      */
-    private function _setupId()
-    {
+    //private function _setupId()
+    //{
 
-    }
+    //}
 
     /**
      * 输出JSON
@@ -169,10 +169,26 @@ class Restful{
 
     /**
      * 请求文章资源
+     * @return mixed
      */
     private function _handleArticle()
     {
-
+        switch ($this->_requestMethod){
+            case 'POST':
+                return $this->_handleArticleCreate();
+            case 'PUT':
+                return $this->_handleArticleEdit();
+            case 'DELETE':
+                return $this->_handleArticleDelete();
+            case 'GET':
+                if (empty($this->_id)){
+                    return $this->_handleArticleList();
+                }else{
+                    return $this->_handleArticleView();
+                }
+            defaut:
+                throw new Exception('请求方法不被允许',405);
+        }
     }
 
     /**
@@ -187,6 +203,136 @@ class Restful{
             throw new Exception('请求参数有误',400);
         }
         return json_decode($raw,true);
+    }
+
+    /**
+     * 创建文章
+     * @return array
+     * @throws Exception
+     */
+    private function _handleArticleCreate()
+    {
+        $body = $this->_getBodyParams();
+        if (empty($body['title'])){
+            throw new Exception('文章标题不能为空',400);
+        }
+        if (empty($body['content'])){
+            throw new Exception('文章内容不能为空',400);
+        }
+        //登录判断
+        $user = $this->_userLogin($_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']);
+        try{
+            $article =$this->_article->create($body['title'],$body['content'],$user['user_id']);
+            return $article;
+        }catch (Exception $e){
+            if (!in_array($e->getCode(),[
+                ErrorCode::ARTICLE_TITLE_CANNOT_EMPTY,
+                ErrorCode::ARTICLE_CONTENT_CANNOT_EMPTY
+            ])){
+                throw new Exception($e->getMessage(),400);
+            }
+            throw new Exception($e->getMessage(),500);
+
+        }
+
+    }
+
+    /**
+     * 用户登录
+     * @param $PHP_AUTH_USER
+     * @param $PHP_AUTH_PW
+     * @return mixed
+     * @throws Exception
+     */
+    private function _userLogin($PHP_AUTH_USER,$PHP_AUTH_PW)
+    {
+        try{
+            return $this->_user->login($PHP_AUTH_USER,$PHP_AUTH_PW);
+        }catch (Exception $e){
+            if (in_array($e->getCode(),[
+                ErrorCode::PASSWORD_CANNOT_EMPTY,
+                ErrorCode::USERNAME_CANNOT_EMPTY,
+                ErrorCode::USERNAME_OR_PASSWORD_INVALID,
+            ])){
+                throw new Exception($e->getMessage(),400);
+            }
+            throw new Exception($e->getMessage(),500);
+        }
+    }
+
+    private function _handleArticleEdit()
+    {
+        $user = $this->_userLogin($_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']);
+        try {
+            $article = $this->_article->view($this->_id);
+            if($article['user_id'] != $user['id']){
+                throw new Exception("您无权编辑", 403);
+            }
+            $body = $this->_getBodyParams();
+            $title = empty($body['title']) ? $article['title'] : $body['title'];
+            $content = empty($body['content']) ? $article['content'] : $body['content'];
+            if($title == $article['title'] && $content == $article['content']){
+                return $article;
+            }
+            return $this->_article->edit($article['id'],$title,$content,$user['id']);
+        } catch (Exception $e) {
+            if($e->getCode() < 100){
+                if($e->getCode() == ErrorCode::ARTICLE_NOT_FOUND){
+                    throw new Exception($e->getMessage(), 404);
+                }else{
+                    throw new Exception($e->getMessage(), 400);
+                }
+            }else{
+                throw $e;
+            }
+        }
+
+    }
+
+    private function _handleArticleDelete()
+    {
+        $user = $this->_userLogin($_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']);
+        try {
+            $article = $this->_article->view($this->_id);
+            if($article['user_id'] != $user['id']){
+                throw new Exception("您无权操作", 403);
+            }
+            $this->_article->del($user['id'],$article['id']);
+            return null;
+        } catch (Exception $e) {
+            if($e->getCode() < 100){
+                if($e->getCode() == ErrorCode::ARTICLE_NOT_FOUND){
+                    throw new Exception($e->getMessage(), 404);
+                }else{
+                    throw new Exception($e->getMessage(), 400);
+                }
+            }else{
+                throw $e;
+            }
+        }
+    }
+    private function _handleArticleList()
+    {
+        $user = $this->_userLogin($_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']);
+        $page = isset($_GET['page']) ? $_GET['page'] : 1;
+        $size = isset($_GET['size']) ? $_GET['size'] : 10;
+        if($size > 100){
+            throw new Exception("分页不能大于100", 400);
+        }
+        return $this->_article->getList($user['id'],$page,$size);
+    }
+
+    private function _handleArticleView()
+    {
+        try {
+            return $this->_article->view($this->_id);
+        } catch (Exception $e) {
+            if($e->getMessage() == ErrorCode::ARTICLE_NOT_FOUND){
+                throw new Exception($e->getMessage(), 404);
+            }else{
+                throw new Exception($e->getMessage(), 500);
+            }
+        }
     }
 
 }
